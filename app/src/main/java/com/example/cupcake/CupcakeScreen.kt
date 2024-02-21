@@ -62,6 +62,9 @@ enum class CupcakeScreen(@StringRes val title: Int) {
     Summary(title = R.string.order_summary)
 }
 
+/**
+ * Composable that displays the topBar and displays back button if back navigation is possible.
+ */
 @Composable
 fun CupcakeAppBar(
     currentScreen: CupcakeScreen,
@@ -114,9 +117,12 @@ fun CupcakeApp(
         NavHost(
             navController = navController,
             startDestination = CupcakeScreen.Start.name,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(innerPadding)
         ) {
-            composable(route = CupcakeScreen.Start.name){
+            composable(route = CupcakeScreen.Start.name) {
                 StartOrderScreen(
                     quantityOptions = DataSource.quantityOptions,
                     onNextButtonClicked = {
@@ -125,7 +131,8 @@ fun CupcakeApp(
                     },
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(dimensionResource(R.dimen.padding_medium)))
+                        .padding(dimensionResource(R.dimen.padding_medium))
+                )
             }
             composable(route = CupcakeScreen.Flavor.name) {
                 val context = LocalContext.current
@@ -168,6 +175,10 @@ fun CupcakeApp(
         }
     }
 }
+
+/**
+ * Resets the [OrderUiState] and pops up to [CupcakeScreen.Start]
+ */
 private fun cancelOrderAndNavigateToStart(
     viewModel: OrderViewModel,
     navController: NavHostController
@@ -175,7 +186,12 @@ private fun cancelOrderAndNavigateToStart(
     viewModel.resetOrder()
     navController.popBackStack(CupcakeScreen.Start.name, inclusive = false)
 }
+
+/**
+ * Creates an intent to share order details
+ */
 private fun shareOrder(context: Context, subject: String, summary: String) {
+    // Create an ACTION_SEND implicit intent with order details in the intent extras
     val intent = Intent(Intent.ACTION_SEND).apply {
         type = "text/plain"
         putExtra(Intent.EXTRA_SUBJECT, subject)
